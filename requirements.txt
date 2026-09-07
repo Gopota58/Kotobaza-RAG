@@ -1,4 +1,4 @@
-﻿# Примечание 03.09: стек ЛОКАЛЬНЫХ эмбеддингов (torch, transformers,
+# Примечание 03.09: стек ЛОКАЛЬНЫХ эмбеддингов (torch, transformers,
 # sentence-transformers, sympy, onnxruntime, langchain-huggingface) намеренно
 # удалён из venv для экономии ~400 МБ — проект использует эмбеддинги через
 # LM Studio API (embed_provider=api). Импорт локальных эмбеддингов в
@@ -129,6 +129,7 @@ xxhash==4.0.1
 yarl==1.24.5
 zstandard==0.25.0
 langchain-openai==1.6.0
+langchain-gigachat==0.5.1
 chardet==7.6.0
 pytest==9.1.1
 

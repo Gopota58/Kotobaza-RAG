@@ -51,10 +51,10 @@ class Settings(BaseSettings):
     retriever_k: int = 8
 
     # --- LLM (любой OpenAI-совместимый endpoint) ---
-    llm_provider: str = "local"      # "local" (LM Studio / Ollama) или "openai"
+    llm_provider: str = "local"      # "local" (LM Studio / Ollama), "openai" или "gigachat" (Сбер)
     llm_base_url: str = "http://localhost:1234/v1"  # пусто -> стандартный OpenAI
-    llm_api_key: str = "lm-studio"   # для LM Studio подходит любое значение
-    llm_model: str = "local-model"   # имя модели в выбранном сервере
+    llm_api_key: str = "lm-studio"   # для gigachat — Authorization key из консоли GigaChat; для LM Studio — любое значение
+    llm_model: str = "local-model"   # для gigachat ОБЯЗАТЕЛЬНО укажи модель (напр. GigaChat-Lite)
     llm_temperature: float = 0.4
     llm_top_p: float = 0.9
     llm_max_tokens: int = 512        # ограничение длины генерации
@@ -68,6 +68,19 @@ class Settings(BaseSettings):
     # {"chat_template_kwargs": {"enable_thinking": false}} — отключение
     # reasoning у моделей семейства Qwen3, если сервер это поддерживает).
     llm_extra_body: str = "{}"
+
+    # --- Провайдер LLM: gigachat (Сбер GigaChat) ---
+    # OpenAI-совместимый API. Authorization key из консоли developers.sber.ru
+    # передаётся в LLM_API_KEY и дальше меняется SDK на access_token через OAuth
+    # (поэтому сырой ChatOpenAI не годится — он шлёт ключ как Bearer и получает 401).
+    # Имена переменных совпадают с документацией GigaChat — их можно копировать как есть.
+    gigachat_base_url: str = "https://api.giga.chat/v1"  # канонический эндпоинт из консоли
+    # Проверка SSL: True — безопасно, но на Windows нужен CA-бандл (российский root-CA
+    # отсутствует в доверенном хранилище Python). False — только для локального dev.
+    gigachat_verify_ssl_certs: bool = True
+    # Путь к CA-бандлу ("Russian Trusted Root CA" с gosuslugi.ru/crt). Пусто — системное
+    # хранилище (на Windows его нет -> ошибка TLS при verify_ssl_certs=True).
+    gigachat_ca_bundle_file: str = ""
 
     # --- CORS (через запятую; "*" — разрешить все, НЕ использовать с куками) ---
     allowed_origins: str = "*"

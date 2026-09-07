@@ -150,6 +150,30 @@ def _parse_extra_body(raw: str) -> dict:
 
 def build_llm(s=None):
     s = s or default_settings
+    # GigaChat (Сбер) — российский облачный LLM. Авторизация идёт через OAuth:
+    # SDK меняет Authorization key (LLM_API_KEY) на access_token и сам его обновляет.
+    # Сырой ChatOpenAI не годится — он отправил бы ключ как Bearer и получил 401.
+    if s.llm_provider == "gigachat":
+        if not s.llm_model:
+            raise ValueError(
+                "Для провайдера gigachat задайте LLM_MODEL (напр. GigaChat-Lite) в .env"
+            )
+        from langchain_gigachat import GigaChat
+
+        # Модель обязательна для GigaChat; ключ/токен берётся из LLM_API_KEY (credentials).
+        kwargs = dict(
+            model=s.llm_model,
+            credentials=s.llm_api_key,
+            temperature=s.llm_temperature,
+            top_p=s.llm_top_p,
+            max_tokens=s.llm_max_tokens,
+            base_url=s.gigachat_base_url,
+            verify_ssl_certs=s.gigachat_verify_ssl_certs,
+        )
+        # CA-бандл нужен на Windows: российский root-CA не в доверенном хранилище Python.
+        if s.gigachat_ca_bundle_file:
+            kwargs["ca_bundle_file"] = s.gigachat_ca_bundle_file
+        return GigaChat(**kwargs)
     extra = _parse_extra_body(s.llm_extra_body)
     # langchain-openai 1.6 по умолчанию шлёт `max_completion_tokens`, который
     # LM Studio и ряд OpenAI-совместимых серверов не понимают и отвечают 500.
