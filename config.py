@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     llm_provider: str = "local"      # "local" (LM Studio / Ollama), "openai" или "gigachat" (Сбер)
     llm_base_url: str = "http://localhost:1234/v1"  # пусто -> стандартный OpenAI
     llm_api_key: str = "lm-studio"   # для gigachat — Authorization key из консоли GigaChat; для LM Studio — любое значение
-    llm_model: str = "local-model"   # для gigachat ОБЯЗАТЕЛЬНО укажи модель (напр. GigaChat-Lite)
+    llm_model: str = "local-model"   # для gigachat ОБЯЗАТЕЛЬНО укажи модель ИЗ get_models() (напр. GigaChat-2 — бесплатный Lite-тариф). ВНИМАНИЕ: "GigaChat-Lite" — НЕ существующий id, будет 404!
     llm_temperature: float = 0.4
     llm_top_p: float = 0.9
     llm_max_tokens: int = 512        # ограничение длины генерации

@@ -17,7 +17,7 @@ def _fake_settings(**overrides):
     defaults = dict(
         llm_provider="gigachat",
         llm_api_key="test-auth-key",
-        llm_model="GigaChat-Lite",
+        llm_model="GigaChat-2",
         llm_temperature=0.4,
         llm_top_p=0.9,
         llm_max_tokens=512,
@@ -38,7 +38,7 @@ def test_build_llm_gigachat_wires_credentials_and_model():
         kwargs = mock_gc.call_args.kwargs
         # Ключ из LLM_API_KEY идёт в credentials; модель — обязательный параметр.
         assert kwargs["credentials"] == "test-auth-key"
-        assert kwargs["model"] == "GigaChat-Lite"
+        assert kwargs["model"] == "GigaChat-2"
         assert kwargs["base_url"] == "https://api.giga.chat/v1"
         assert kwargs["verify_ssl_certs"] is True
         assert "max_tokens" in kwargs and kwargs["max_tokens"] == 512

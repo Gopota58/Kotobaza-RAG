@@ -9,6 +9,12 @@ import threading
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000/ask")
 API_KEY = os.environ.get("API_KEY", "88888888")
 
+# trust_env=False — ходить на localhost напрямую, минуя системный прокси
+# (KiberportalX/др.), иначе запрос к локальному серверу уходит в прокси и
+# возвращает 500. Сервер и бот уже так делают — клиент тоже.
+_session = requests.Session()
+_session.trust_env = False
+
 class RAGClient:
     def __init__(self, root):
         self.root = root
@@ -62,7 +68,7 @@ class RAGClient:
         try:
             headers = {"Content-Type": "application/json", "X-API-Key": API_KEY}
             payload = {"question": question}
-            resp = requests.post(API_URL, json=payload, headers=headers, timeout=30)
+            resp = _session.post(API_URL, json=payload, headers=headers, timeout=30)
             if resp.status_code == 200:
                 answer = resp.json().get("answer", "Нет ответа")
             else:
