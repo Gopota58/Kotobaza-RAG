@@ -16,7 +16,7 @@
 - **Гэпы:** только локальные LLM/синтетика → нет облачных российских LLM и деплоя в РФ-облака; нет резюме/профиля.
 
 ## Дорожная карта (исполнять здесь, шаг за шагом, с подтверждением)
-1. **Гэп 1 — GigaChat как провайдер LLM** (приоритет). Добавить `gigachat` в `rag/engine.py` как OpenAI-compatible (`https://gigachat.devices.sberbank.ru/api/v1` + Bearer). Переключатель `LLM_PROVIDER=gigachat` в `.env`. Приёмка: `/ask` отвечает на GigaChat + тест с mock.
+1. **Гэп 1 — GigaChat как провайдер LLM** (приоритет). Добавить `gigachat` в `rag/engine.py` как OpenAI-compatible (`https://gigachat.devices.sberbank.ru/api/v1` + Bearer). Переключатель `LLM_PROVIDER=gigachat` в `.env`. ✅ СДЕЛАНО: интеграция через `langchain-gigachat` (`GigaChat` SDK делает OAuth→token, SSL, retry) в `build_llm()`; базовый URL `https://api.giga.chat/v1`; модель `GigaChat-2` (бесплатный Lite; `GigaChat-Lite` — несуществующий API-id). Живая `/ask` пройдена (2+2=«Четыре»), тесты 11 passed, запушено в GitHub. Приёмка выполнена.
 2. **Гэп 2 — бесплатный деплой (Yandex Cloud serverless)**. Serverless Containers + API Gateway (free ~1M req/mo). Векторы → Qdrant Cloud free (1 GB). docs → образ/Object Storage free. Секреты → переменные окружения. Приёмка: внешний URL на GigaChat.
 3. **Гэп 3 — Qdrant как альтернативный бэкенд** (опц.). `VECTOR_STORE=qdrant`.
 4. **Гэп 4 — case-study isp-triage** для собесов (письменно).
@@ -34,7 +34,7 @@
 GitHub-токен `ghp_…` из чата — отозвать в GitHub Settings → Developer settings → PAT.
 
 ## Статус
-- [x] Гэп 1 начат
+- [x] Гэп 1 — СДЕЛАНО (live-verified, pushed `ba54db0`)
 - [ ] Гэп 2
 - [ ] Гэп 3
 - [ ] Гэп 4
