@@ -36,6 +36,7 @@ build/
 
 # Runtime logs and pid-files
 logs/
+*.log
 
 
 # Editor / OS
