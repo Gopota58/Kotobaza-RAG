@@ -12,6 +12,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from config import settings
@@ -121,7 +122,7 @@ async def ingest_documents(api_key: str = Depends(verify_api_key)):
     Принудительная переиндексация всех документов из docs/.
     """
     try:
-        result = engine.reindex()
+        result = await run_in_threadpool(engine.reindex)
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
         return result
@@ -141,7 +142,7 @@ async def upload_file(
     """
     content = await file.read()
     try:
-        result = engine.add_document(file.filename, content)
+        result = await run_in_threadpool(engine.add_document, file.filename, content)
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
         return {
@@ -174,7 +175,7 @@ async def delete_document(
     Удалить документ и переиндексировать.
     """
     try:
-        result = engine.remove_document(filename)
+        result = await run_in_threadpool(engine.remove_document, filename)
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
         return {
