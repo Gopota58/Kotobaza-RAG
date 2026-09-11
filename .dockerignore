@@ -14,3 +14,6 @@ uvicorn_err.log
 eval_out.log
 eval_err.log
 evaluation/results.json
+*.log
+docs_backup/
+docs_pass1/

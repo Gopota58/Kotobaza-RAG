@@ -6,7 +6,7 @@
 ![Stack](https://img.shields.io/badge/stack-FastAPI%20·%20LangChain%20·%20Chroma%20·%20LM%20Studio-informational)
 
 > **Abstract (EN):** *Kotobaza* is a fully local, offline-first **RAG engine** —
-> FastAPI + LangChain + Chroma, with a pluggable LLM (LM Studio / Ollama / OpenAI)
+> FastAPI + LangChain + Chroma, with a pluggable LLM (LM Studio / Ollama / OpenAI / **GigaChat**)
 > and pluggable embeddings (local Sentence-Transformers **or** any OpenAI-compatible
 > embedding API). It ships with a **Telegram bot**, a **web chat**, a **desktop
 > client**, a **RAGAS-style evaluation harness**, `pytest` + **GitHub Actions CI**,
@@ -41,7 +41,7 @@
 ## Возможности
 
 - **Гибридный ретривер**: векторный cosine + BM25/TF-IDF, слияние через Reciprocal Rank Fusion.
-- **Сменный LLM**: LM Studio / Ollama (бесплатно, офлайн) или OpenAI — через `.env`.
+- **Сменный LLM**: LM Studio / Ollama (бесплатно, офлайн), OpenAI или **GigaChat** (Сбер, российский облачный LLM) — через `.env`.
 - **Сменные эмбеддинги**: локальные `all-MiniLM-L6-v2` **или** любой OpenAI-совместимый
   embedding-API (напр. `nomic-embed-text` из LM Studio — заметно лучше по-русски).
 - **Telegram-бот** (`python-telegram-bot`) с обходом блокировок через прокси.
@@ -129,6 +129,10 @@ app = Application.builder().token(...).request(request).build()
 - **Локально (рекомендуется):** LM Studio / Ollama → OpenAI-совместимый сервер на
   `:1234/v1` (или `:11434/v1`). `LLM_BASE_URL=...`, `LLM_MODEL=<имя>`.
 - **OpenAI:** `LLM_BASE_URL=` (пусто), `LLM_API_KEY=sk-...`, `LLM_MODEL=gpt-4o-mini`.
+- **GigaChat (Сбер):** российский облачный LLM. `LLM_PROVIDER=gigachat`,
+  `LLM_API_KEY=<Authorization key из консоли GigaChat>`, `LLM_MODEL=GigaChat-2`
+  (бесплатный Lite-тариф). SDK сам делает OAuth → access_token, поэтому сырой
+  `ChatOpenAI` не нужен. Подробнее — в `.env.example` (вариант C) и **[DEPLOY.md](DEPLOY.md)**.
 
 ### ⚠️ Избегайте reasoning-моделей (Qwen3-thinking и др.)
 
@@ -198,6 +202,10 @@ kotobaza/
 | `LLM_BASE_URL`    | `http://localhost:1234/v1`    | endpoint LLM (пусто → стандартный OpenAI) |
 | `LLM_API_KEY`     | `lm-studio`                   | ключ LLM (для LM Studio — любой) |
 | `LLM_MODEL`       | `local-model`                 | имя модели (см. «Выбор LLM») |
+| `LLM_PROVIDER`    | `local`                       | `local` / `openai` / `gigachat` (Сбер) |
+| `GIGACHAT_BASE_URL` | `https://api.giga.chat/v1` | эндпоинт GigaChat |
+| `GIGACHAT_VERIFY_SSL_CERTS` | `true`            | `false` — только для локального dev |
+| `GIGACHAT_CA_BUNDLE_FILE` | —                 | путь к Russian Trusted Root CA (Win/Linux) |
 | `LLM_TEMPERATURE` / `LLM_TOP_P` / `LLM_MAX_TOKENS` | `0.4` / `0.9` / `512` | параметры генерации |
 | `LLM_USE_SYSTEM_PROMPT` | `true`                 | `false` — для моделей без system-роли |
 | `LLM_MAX_CONTEXT_CHARS` | `4000`                | защита от переполнения контекстного окна |
@@ -266,6 +274,25 @@ docker compose exec ollama ollama pull qwen2.5:7b   # один раз
 ```
 
 Либо только образ приложения: `docker build -t kotobaza-rag .` (LLM-сервер — ваш).
+
+### ☁️ Деплой в Yandex Cloud (Serverless Containers, бесплатно)
+
+Образ **serverless-ready**: `docker-entrypoint.sh` слушает порт из переменной
+`$PORT` (его задаёт Yandex), при локальном запуске — `8000`. Полная пошаговая
+инструкция (Container Registry → Serverless Container → API Gateway, переменные
+окружения для GigaChat, эмбеддинги и эфемерность хранилища) — в **[DEPLOY.md](DEPLOY.md)**.
+
+Ключевые переменные окружения для облака:
+
+| Переменная | Значение |
+|------------|----------|
+| `LLM_PROVIDER` | `gigachat` |
+| `LLM_API_KEY` | `<Authorization key из консоли GigaChat>` |
+| `LLM_MODEL` | `GigaChat-2` (бесплатный Lite) |
+| `GIGACHAT_VERIFY_SSL_CERTS` | `true` |
+| `GIGACHAT_CA_BUNDLE_FILE` | `/app/certs/Russian_Trusted_Root_CA.cer` |
+| `EMBED_PROVIDER` | `api` (+ `EMBED_API_*`) или `local` |
+| `API_KEY` | **обязательно смените** с дефолтного `88888888` |
 
 ## Инженерные решения и ограничения
 

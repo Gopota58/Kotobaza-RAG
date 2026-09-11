@@ -35,7 +35,7 @@ GitHub-токен `ghp_…` из чата — отозвать в GitHub Setting
 
 ## Статус
 - [x] Гэп 1 — СДЕЛАНО (live-verified, pushed `ba54db0`)
-- [ ] Гэп 2
+- [x] Гэп 2 — конфиг + документация деплоя (DEPLOY.md); развёрнуто в Yandex Cloud (serverless-ready `$PORT` в entrypoint, SSL-CA для GigaChat)
 - [ ] Гэп 3
 - [ ] Гэп 4
 - [ ] Гэп 5/6
