@@ -22,7 +22,7 @@
   эмбеддинги — локально или через OpenAI-совместимый API);
 - имеет **чёткое разделение**: переиспользуемое ядро `rag/engine.py` и тонкие транспорты
   (`app.py` — HTTP, `bot.py` — Telegram, `desktop_client.py` — GUI);
-- **обходит блокировку Telegram в РФ** через HTTP-прокси (см. отдельный раздел);
+- **подключается к Telegram** через HTTP-прокси, если он задан (см. отдельный раздел);
 - **сам переиндексирует** базу при изменении файлов в `docs/` (watch + filelock);
 - поставляется с **оценкой качества** (faithfulness / answer relevancy / context
   precision / recall) и **зелёным CI**.
@@ -44,7 +44,7 @@
 - **Сменный LLM**: LM Studio / Ollama (бесплатно, офлайн), OpenAI или **GigaChat** (Сбер, российский облачный LLM) — через `.env`.
 - **Сменные эмбеддинги**: локальные `all-MiniLM-L6-v2` **или** любой OpenAI-совместимый
   embedding-API (напр. `nomic-embed-text` из LM Studio — заметно лучше по-русски).
-- **Telegram-бот** (`python-telegram-bot`) с обходом блокировок через прокси.
+- **Telegram-бот** (`python-telegram-bot`) с опциональным подключением через прокси.
 - **Веб-чат** (vanilla JS) + **десктоп-клиент** (Tkinter, собирается в `.exe` через PyInstaller).
 - **Авто-reindex**: правите `.txt` в `docs/` — индекс обновляется сам, без ручного запуска.
 - **Управление корпусом по API**: загрузка/удаление `.txt` и переиндексация на лету.
@@ -91,11 +91,11 @@ FastAPI · Uvicorn · LangChain (`langchain`, `langchain-core`, `langchain-commu
 `python-telegram-bot` · `watchfiles` + `filelock` · `httpx` · Pydantic /
 `pydantic-settings` · `chardet` · Tkinter + PyInstaller · `pytest` · GitHub Actions · Docker.
 
-## Telegram-бот и обход блокировок (РФ)
+## Telegram-бот и подключение через прокси
 
-В России `api.telegram.org` блокируется на уровне IP/сетей, поэтому прямой запрос к
-Telegram из кода уходит в таймаут. Решение — **HTTP-прокси** (в демо — локальный
-VPN-прокси `KiberportalX` на `127.0.0.1:7890`), через который ходит только Telegram:
+Бот опционально ходит в Telegram через **HTTP/SOCKS5-прокси** (в демо — локальный
+прокси на `127.0.0.1:7890`, задаётся `TELEGRAM_PROXY`), через который ходит только
+Telegram:
 
 ```python
 # bot.py — python-telegram-bot v22 (httpx-транспорт)
@@ -167,7 +167,7 @@ python bot.py                                           # (опц.) Telegram-б�
 kotobaza/
 ├── rag/engine.py          # ядро: эмбеддинги, Chroma, гибридный retriever, LLM, reindex, watcher
 ├── app.py                 # FastAPI: /ask /ingest /documents /health, CORS, auth, статика
-├── bot.py                 # Telegram-бот (тонкий HTTP-клиент к app.py) + обход блокировок
+├── bot.py                 # Telegram-бот (тонкий HTTP-клиент к app.py) + опциональный прокси
 ├── ingest.py              # CLI: python ingest.py
 ├── config.py              # настройки из .env (pydantic-settings)
 ├── download_model.py      # скачивание модели эмбеддингов (huggingface_hub)
@@ -214,7 +214,7 @@ kotobaza/
 | `EMBED_PROVIDER`  | `local`                       | `local` (MiniLM) или `api` (OpenAI-совместимый) |
 | `EMBED_API_MODEL` / `EMBED_API_BASE_URL` | —    | модель/endpoint для `EMBED_PROVIDER=api` |
 | `TELEGRAM_BOT_TOKEN` | —                          | токен бота (@BotFather) |
-| `TELEGRAM_PROXY`  | —                             | `http://127.0.0.1:7890` — обход блокировки Telegram |
+| `TELEGRAM_PROXY`  | —                             | `http://127.0.0.1:7890` — прокси для Telegram (опц.) |
 | `RAG_API_URL`     | `http://localhost:8000`       | адрес веб-сервера для бота |
 | `ALLOWED_ORIGINS` | `*`                           | CORS (через запятую) |
 
@@ -302,7 +302,7 @@ docker compose exec ollama ollama pull qwen2.5:7b   # один раз
   HTTP-клиенты. Меньше гонок и дублирования тяжёлого состояния.
 - **Переиндексация без `rm -rf`** — пересоздаётся только коллекция через общий
   `PersistentClient` + переподключение цепочки на лету; под `FileLock` между процессами.
-- **Обход блокировок Telegram** — проксируется только Telegram, `trust_env=False` для
+- **Telegram через прокси** — проксируется только Telegram, `trust_env=False` для
   локальных вызовов, супервизор с ретраями.
 - **Совместимость с моделями** — опциональная system-роль, защита контекста по длине,
   явная ошибка при пустом `content` reasoning-модели.
