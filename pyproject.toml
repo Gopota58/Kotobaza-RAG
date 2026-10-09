@@ -1,7 +1,7 @@
 [project]
 name = "kotobaza-rag"
 version = "1.0.0"
-description = "Локальный offline-first RAG-движок (FastAPI + LangChain + Chroma) с Telegram-ботом, веб-чатом и обходом блокировок."
+description = "Локальный offline-first RAG-движок (FastAPI + LangChain + Chroma) с Telegram-ботом, веб-чатом и гибридным поиском."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
