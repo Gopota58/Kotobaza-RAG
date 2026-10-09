@@ -9,9 +9,9 @@ import threading
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:8000/ask")
 API_KEY = os.environ.get("API_KEY", "88888888")
 
-# trust_env=False — ходить на localhost напрямую, минуя системный прокси
-# (KiberportalX/др.), иначе запрос к локальному серверу уходит в прокси и
-# возвращает 500. Сервер и бот уже так делают — клиент тоже.
+# trust_env=False — ходить на localhost напрямую, минуя системный прокси,
+# иначе запрос к локальному серверу уходит в прокси и возвращает 500.
+# Сервер и бот уже так делают — клиент тоже.
 _session = requests.Session()
 _session.trust_env = False
 
