@@ -8,13 +8,11 @@ Telegram-бот «Котобаза» 😺
 
 Поток: сообщение в Telegram -> POST /ask на веб-сервер -> ответ в Telegram.
 
-ОБХОД БЛОКИРОВКИ TELEGRAM В РФ
-------------------------------
-В России api.telegram.org заблокирован на уровне сети (прямой доступ — таймаут).
-На машине поднят локальный VPN-клиент KiberportalX, который даёт SOCKS5/HTTP
-прокси на 127.0.0.1:7890. Весь трафик бота к Telegram идёт ЧЕРЕЗ этот прокси
-(поле proxy в HTTPXRequest). К локальному веб-серверу (:8000) бот ходит
-напрямую (trust_env=False), прокси не трогая.
+Подключение к Telegram
+----------------------
+Бот опционально ходит в Telegram через SOCKS5/HTTP-прокси (поле `proxy` в
+HTTPXRequest, задаётся переменной `TELEGRAM_PROXY`). К локальному веб-серверу
+(:8000) бот всегда ходит напрямую (`trust_env=False`), прокси не трогая.
 
 Настройка через .env:
   TELEGRAM_BOT_TOKEN — токен бота
@@ -42,7 +40,7 @@ from config import settings
 
 # --- Конфигурация: все секреты только из .env (через pydantic-settings) ---
 TOKEN = settings.telegram_bot_token
-# Прокси для обхода блокировки Telegram. Пустая строка = прямое соединение.
+# Опциональный прокси к Telegram. Пустая строка = прямое соединение.
 PROXY = settings.telegram_proxy
 # Локальный RAG-сервер (веб-приложение app.py).
 RAG_API_URL = settings.rag_api_url
@@ -175,8 +173,8 @@ def main():
     builder = ApplicationBuilder().token(TOKEN)
     if PROXY:
         log.info("Использую прокси для Telegram: %s", PROXY)
-        # trust_env=False — чтобы системные HTTPS_PROXY/ALL_PROXY не конфликтовали
-        # с явно заданным обходным прокси.
+        # trust_env=False — чтобы системные переменные окружения не конфликтовали
+        # с явно заданным прокси.
         builder = builder.request(
             HTTPXRequest(
                 proxy=PROXY,
@@ -204,7 +202,7 @@ def main():
 def run_supervised():
     """Супервизор: держит бота запущенным. Если run_polling завершился
     (непредвиденный выход/падение), делает паузу и перезапускает цикл,
-    чтобы бот не «отваливался» при кратковременных обрывах прокси/VPN."""
+    чтобы бот не «отваливался» при кратковременных обрывах сети."""
     while True:
         try:
             main()
