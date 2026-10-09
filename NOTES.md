@@ -33,7 +33,7 @@
 - GigaChat OAuth: `Authorization: Basic <key>`, scope `GIGACHAT_API_PERS`; сырой ChatOpenAI не годится (401).
 - SSL на Windows: российский root-CA вне доверия Python → `GIGACHAT_CA_BUNDLE_FILE` (certs/russian_trusted_root_ca.crt)
   либо `GIGACHAT_VERIFY_SSL_CERTS=false` (только dev).
-- Telegram в РФ заблокирован → боту нужен `TELEGRAM_PROXY` (http://127.0.0.1:7890), иначе не достучится.
+- Telegram: боту нужен `TELEGRAM_PROXY` (http://127.0.0.1:7890), если прямой доступ недоступен.
 - **ЖЁСТКОЕ правило пользователя:** без явной команды ничего не менять и не запускать; спрашивать
   перед КАЖДЫМ шагом. Закреплено в `~/.dsh/AGENTS.md` и `wiki/concepts/standing-rule-ask-first.md`.
 
